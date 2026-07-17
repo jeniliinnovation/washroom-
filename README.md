@@ -185,5 +185,3 @@ After running `npm run seed`, you can test the platform using these credentials 
 
 ## 📄 License
 This project is licensed under the MIT License. Built with ❤️ for Smart City Civic Infrastructure.
-#   w a s h r o o m -  
- 
