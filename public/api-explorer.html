@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clean Toilet Portal - API Explorer & Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      --card-bg: rgba(30, 41, 59, 0.85);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --accent: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+    body { background: var(--bg-gradient); color: var(--text); min-height: 100vh; padding: 2rem; }
+    .header { max-width: 1300px; margin: 0 auto 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-border); padding-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+    .header h1 { font-family: 'Outfit', sans-serif; font-size: 2rem; background: linear-gradient(to right, #60a5fa, #34d399); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .header p { color: var(--text-muted); font-size: 0.95rem; margin-top: 4px; }
+    
+    /* Role Selector Bar */
+    .role-bar { background: rgba(15, 23, 42, 0.9); border: 1px solid var(--card-border); border-radius: 12px; padding: 1rem 1.5rem; max-width: 1300px; margin: 0 auto 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3); }
+    .role-buttons { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .btn-role { background: rgba(51, 65, 85, 0.6); border: 1px solid transparent; color: var(--text); padding: 0.5rem 1rem; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; }
+    .btn-role:hover { background: rgba(71, 85, 105, 0.8); }
+    .btn-role.active { background: var(--primary); border-color: #60a5fa; box-shadow: 0 0 15px rgba(59, 130, 246, 0.4); }
+    .token-display { font-size: 0.8rem; color: #a7f3d0; background: rgba(16, 185, 129, 0.15); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.3); display: flex; align-items: center; gap: 6px; }
+    
+    /* Layout Grid */
+    .grid { max-width: 1300px; margin: 0 auto; display: grid; grid-template-columns: 350px 1fr; gap: 2rem; }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+    
+    /* Endpoint Nav */
+    .nav-panel { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px; padding: 1.2rem; height: fit-content; backdrop-filter: blur(10px); }
+    .nav-section-title { font-family: 'Outfit', sans-serif; font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px; margin: 1.2rem 0 0.6rem; }
+    .nav-section-title:first-child { margin-top: 0; }
+    .endpoint-btn { display: flex; align-items: center; justify-content: space-between; width: 100%; background: transparent; border: none; color: var(--text); padding: 0.7rem 0.8rem; border-radius: 8px; cursor: pointer; text-align: left; font-size: 0.9rem; transition: background 0.15s; }
+    .endpoint-btn:hover, .endpoint-btn.active { background: rgba(59, 130, 246, 0.18); color: #60a5fa; }
+    .badge { font-size: 0.7rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
+    .badge-get { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .badge-post { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); }
+    .badge-patch { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
+    
+    /* Main Tester Panel */
+    .tester-panel { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px; padding: 2rem; backdrop-filter: blur(10px); }
+    .tester-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; border-bottom: 1px solid var(--card-border); padding-bottom: 1.2rem; }
+    .tester-title { font-family: 'Outfit', sans-serif; font-size: 1.5rem; margin-bottom: 6px; }
+    .tester-desc { color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; }
+    
+    .form-group { margin-bottom: 1.2rem; }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: #cbd5e1; margin-bottom: 6px; }
+    .form-control { width: 100%; background: rgba(15, 23, 42, 0.8); border: 1px solid var(--card-border); border-radius: 8px; padding: 0.75rem 1rem; color: var(--text); font-size: 0.95rem; outline: none; transition: border 0.2s; }
+    .form-control:focus { border-color: var(--primary); }
+    textarea.form-control { font-family: monospace; min-height: 120px; font-size: 0.85rem; }
+    
+    .btn-submit { background: linear-gradient(135deg, #3b82f6, #2563eb); border: none; color: #fff; font-weight: 600; padding: 0.8rem 1.8rem; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
+    .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4); }
+    
+    /* Response Box */
+    .response-section { margin-top: 2rem; border-top: 1px solid var(--card-border); padding-top: 1.5rem; }
+    .response-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .status-badge { font-weight: 700; font-size: 0.85rem; padding: 4px 10px; border-radius: 6px; }
+    .status-200 { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .status-error { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
+    pre.response-box { background: #0b1120; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 1.2rem; font-family: monospace; font-size: 0.85rem; color: #38bdf8; overflow-x: auto; max-height: 450px; line-height: 1.4; }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div>
+      <h1>Clean Toilet Portal - API Dashboard</h1>
+      <p>Smart Public Washroom Management System (PWMS) • Node.js + Express + MySQL / SQLite</p>
+    </div>
+    <div style="text-align: right;">
+      <span class="token-display" id="dbStatus">🐬 MySQL (`washroom`) & SQLite Active</span>
+    </div>
+  </header>
+
+  <div class="role-bar">
+    <div>
+      <span style="font-size: 0.85rem; color: var(--text-muted); margin-right: 10px;">Quick Role Switcher (Auto-injects JWT):</span>
+      <div class="role-buttons" style="display: inline-flex; margin-top: 6px;">
+        <button class="btn-role active" onclick="switchRole('CITIZEN', 'citizen@clean.org')">🧑 Citizen</button>
+        <button class="btn-role" onclick="switchRole('STAFF', 'staff.ramesh@clean.org')">🧹 Cleaning Staff</button>
+        <button class="btn-role" onclick="switchRole('SUPERVISOR', 'supervisor.anita@clean.org')">👔 Supervisor</button>
+        <button class="btn-role" onclick="switchRole('ADMIN', 'admin.vikram@clean.org')">🏛️ Municipality Admin</button>
+        <button class="btn-role" onclick="switchRole('SUPER_ADMIN', 'superadmin@clean.org')">🔑 Super Admin</button>
+      </div>
+    </div>
+    <div class="token-display">
+      <span>Logged in as: <strong id="activeRoleName">Citizen (citizen@clean.org)</strong></span>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- Endpoints Sidebar -->
+    <nav class="nav-panel">
+      <div class="nav-section-title">📊 Analytics & Dashboard</div>
+      <button class="endpoint-btn active" onclick="loadEndpoint('getDashboardSummary')">
+        <span>Executive Dashboard KPIs</span> <span class="badge badge-get">GET</span>
+      </button>
+      <button class="endpoint-btn" onclick="loadEndpoint('getHeatmap')">
+        <span>Ward Complaint Heatmap</span> <span class="badge badge-get">GET</span>
+      </button>
+      <button class="endpoint-btn" onclick="loadEndpoint('getStaffPerformance')">
+        <span>Staff Performance Leaderboard</span> <span class="badge badge-get">GET</span>
+      </button>
+
+      <div class="nav-section-title">🤖 AI Cleanliness Scanner</div>
+      <button class="endpoint-btn" onclick="loadEndpoint('postAiScan')">
+        <span>AI Cleanliness Diagnosis Simulation</span> <span class="badge badge-post">POST</span>
+      </button>
+
+      <div class="nav-section-title">🚻 Public Washrooms & QR Code</div>
+      <button class="endpoint-btn" onclick="loadEndpoint('getWashrooms')">
+        <span>List Nearby Washrooms (GPS Filter)</span> <span class="badge badge-get">GET</span>
+      </button>
+      <button class="endpoint-btn" onclick="loadEndpoint('getQrLookup')">
+        <span>Scan QR Code (`QR-WASH-101`)</span> <span class="badge badge-get">GET</span>
+      </button>
+      <button class="endpoint-btn" onclick="loadEndpoint('postWashroom')">
+        <span>Add New Washroom + Generate QR</span> <span class="badge badge-post">POST</span>
+      </button>
+
+      <div class="nav-section-title">📋 Complaints Lifecycle Engine</div>
+      <button class="endpoint-btn" onclick="loadEndpoint('postComplaint')">
+        <span>Submit Citizen Complaint (`POST`)</span> <span class="badge badge-post">POST</span>
+      </button>
+      <button class="endpoint-btn" onclick="loadEndpoint('getComplaints')">
+        <span>List Role-Filtered Complaints</span> <span class="badge badge-get">GET</span>
+      </button>
+      <button class="endpoint-btn" onclick="loadEndpoint('patchAssign')">
+        <span>Assign Cleaning Staff (`PATCH`)</span> <span class="badge badge-patch">PATCH</span>
+      </button>
+      <button class="endpoint-btn" onclick="loadEndpoint('patchStaffAction')">
+        <span>Staff Photo Upload & Status Update</span> <span class="badge badge-patch">PATCH</span>
+      </button>
+      <button class="endpoint-btn" onclick="loadEndpoint('patchVerify')">
+        <span>Supervisor Resolution Verification</span> <span class="badge badge-patch">PATCH</span>
+      </button>
+      <button class="endpoint-btn" onclick="loadEndpoint('postFeedback')">
+        <span>Citizen 5-Star Rating & Closure</span> <span class="badge badge-post">POST</span>
+      </button>
+
+      <div class="nav-section-title">🔐 Authentication & OTP</div>
+      <button class="endpoint-btn" onclick="loadEndpoint('postSendOtp')">
+        <span>Send OTP Code via Nodemailer SMTP</span> <span class="badge badge-post">POST</span>
+      </button>
+      <button class="endpoint-btn" onclick="loadEndpoint('postLogin')">
+        <span>Standard Email/Password Login</span> <span class="badge badge-post">POST</span>
+      </button>
+    </nav>
+
+    <!-- Main Interactive Panel -->
+    <main class="tester-panel">
+      <div class="tester-header">
+        <div>
+          <h2 class="tester-title" id="endpointTitle">Executive Dashboard KPIs</h2>
+          <p class="tester-desc" id="endpointDesc">Fetches total washroom counts, active vs. resolved complaints, high-priority issues, and citizen satisfaction scores.</p>
+        </div>
+        <div>
+          <span class="badge badge-get" id="endpointBadge" style="font-size: 0.9rem; padding: 6px 12px;">GET /api/analytics/dashboard</span>
+        </div>
+      </div>
+
+      <form id="testerForm" onsubmit="executeRequest(event)">
+        <div id="formFields">
+          <!-- Dynamic Form Fields will be inserted here -->
+        </div>
+        <button type="submit" class="btn-submit">⚡ Send API Request</button>
+      </form>
+
+      <div class="response-section" id="responseContainer" style="display: none;">
+        <div class="response-header">
+          <span style="font-weight: 600; font-size: 0.9rem; color: #cbd5e1;">API Response payload:</span>
+          <span class="status-badge status-200" id="responseStatusBadge">200 OK</span>
+        </div>
+        <pre class="response-box" id="responseJson"></pre>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    let currentToken = '';
+    let currentRole = 'CITIZEN';
+    let currentEndpoint = 'getDashboardSummary';
+
+    // Endpoints configuration catalog
+    const endpointsConfig = {
+      getDashboardSummary: {
+        title: 'Executive Dashboard KPIs',
+        desc: 'Fetches real-time municipal summary including total public toilets, active vs resolved complaints, high-priority counts, and citizen satisfaction rating.',
+        method: 'GET', url: '/api/analytics/dashboard', fields: []
+      },
+      getHeatmap: {
+        title: 'Ward Complaint Heatmap',
+        desc: 'Returns complaint density clustered by city wards (`Ward 4 - Central Station`, `Ward 2 - Market Complex`) and geographic distribution.',
+        method: 'GET', url: '/api/analytics/heatmap', fields: []
+      },
+      getStaffPerformance: {
+        title: 'Staff Performance Leaderboard',
+        desc: 'Retrieves cleaning staff metrics, tasks assigned vs completed, and average resolution efficiency.',
+        method: 'GET', url: '/api/analytics/staff-performance', fields: []
+      },
+      postAiScan: {
+        title: 'AI Cleanliness Diagnosis Simulation',
+        desc: 'Simulates computer vision image analysis: calculates `cleanliness_score` (0-100%), detects bounding-box anomalies (overflowing drains, broken fixtures), and auto-routes priority.',
+        method: 'POST', url: '/api/ai/analyze-image', fields: [
+          { name: 'washroom_id', label: 'Washroom ID', value: '1' },
+          { name: 'image_url', label: 'Simulated Upload Image URL', value: '/uploads/sample_overflow_1.jpg' }
+        ]
+      },
+      getWashrooms: {
+        title: 'List Nearby Washrooms (GPS Filter)',
+        desc: 'Lists all public washrooms. If GPS coordinates `lat` & `lng` and `radiusKm` are passed, calculates distance using Haversine formula.',
+        method: 'GET', url: '/api/washrooms', fields: [
+          { name: 'lat', label: 'Latitude (Optional)', value: '28.6139' },
+          { name: 'lng', label: 'Longitude (Optional)', value: '77.2090' },
+          { name: 'radiusKm', label: 'Search Radius (km)', value: '15' }
+        ]
+      },
+      getQrLookup: {
+        title: 'Instant QR Code Scanner Lookup',
+        desc: 'Simulates a citizen scanning a physical QR sticker (`QR-WASH-101` to `QR-WASH-106`) to pull up details, facilities, and one-click reporting.',
+        method: 'GET', url: '/api/washrooms/qr/QR-WASH-101', fields: [
+          { name: 'qrCodeId', label: 'Unique QR Code ID', value: 'QR-WASH-101' }
+        ]
+      },
+      postWashroom: {
+        title: 'Add New Public Washroom + Generate QR',
+        desc: 'Admin endpoint to register a new civic washroom facility with GPS coordinates, opening hours, and facilities.',
+        method: 'POST', url: '/api/washrooms', fields: [
+          { name: 'name', label: 'Facility Name', value: 'Aerocity Metro Hub Public Convenience' },
+          { name: 'address', label: 'Address', value: 'Near Aerocity Metro Gate 1, New Delhi' },
+          { name: 'ward', label: 'Ward Name', value: 'Ward 6 - Tech Park Metro' },
+          { name: 'latitude', label: 'Latitude', value: '28.5494' },
+          { name: 'longitude', label: 'Longitude', value: '77.1212' },
+          { name: 'qr_code_id', label: 'Unique QR Identifier', value: 'QR-WASH-107' },
+          { name: 'facilities', label: 'Facilities (JSON Array)', value: '["Wheelchair Accessible", "Automatic Taps", "Baby Changing Station"]' },
+          { name: 'opening_hours', label: 'Opening Hours', value: '24/7' }
+        ]
+      },
+      postComplaint: {
+        title: 'Submit Citizen Complaint',
+        desc: 'Allows citizens to report unhygienic or broken washrooms with categories, priority, GPS tagging, and optional anonymous mode (`is_anonymous: 1`).',
+        method: 'POST', url: '/api/complaints', fields: [
+          { name: 'washroom_id', label: 'Washroom ID', value: '1' },
+          { name: 'category', label: 'Complaint Category', value: 'Overflowing Drain & Water Not Available' },
+          { name: 'priority', label: 'Priority', value: 'High' },
+          { name: 'description', label: 'Detailed Description', value: 'Water is backing up from the drain and both washbasin taps have stopped working.' },
+          { name: 'gps_lat', label: 'GPS Latitude', value: '28.6139' },
+          { name: 'gps_lng', label: 'GPS Longitude', value: '77.2090' },
+          { name: 'is_anonymous', label: 'Report Anonymously (0 or 1)', value: '0' }
+        ]
+      },
+      getComplaints: {
+        title: 'List Role-Filtered Complaints',
+        desc: 'Returns complaints based on your active role: Citizens see their own reports, Cleaning Staff see their assigned jobs, and Supervisors/Admins see ward/all jobs.',
+        method: 'GET', url: '/api/complaints', fields: []
+      },
+      patchAssign: {
+        title: 'Assign Cleaning Staff to Complaint',
+        desc: 'Supervisors/Admins assign a staff member (`assigned_staff_id`) and set expected resolution SLA time (`expected_hours`).',
+        method: 'PATCH', url: '/api/complaints/1/assign', fields: [
+          { name: 'complaint_id', label: 'Complaint ID in URL', value: '1' },
+          { name: 'assigned_staff_id', label: 'Cleaning Staff User ID (e.g., 3 for Ramesh)', value: '3' },
+          { name: 'expected_hours', label: 'Expected Resolution Time (Hours)', value: '2' }
+        ]
+      },
+      patchStaffAction: {
+        title: 'Staff Photo Upload & Status Update',
+        desc: 'Cleaning staff updates job progress (`In Progress` -> `Cleaning Completed` -> `Verification Pending`) and uploads before/after photo proof.',
+        method: 'PATCH', url: '/api/complaints/1/staff-action', fields: [
+          { name: 'complaint_id', label: 'Complaint ID in URL', value: '1' },
+          { name: 'status', label: 'New Status (`In Progress` | `Cleaning Completed` | `Verification Pending`)', value: 'Verification Pending' },
+          { name: 'notes', label: 'Staff Action Notes', value: 'Unclogged the main drain pipe, sanitized floor, and repaired tap joint.' },
+          { name: 'image_urls', label: 'Uploaded Proof Image URL', value: '["/uploads/sample_cleaned_after.jpg"]' }
+        ]
+      },
+      patchVerify: {
+        title: 'Supervisor Resolution Verification',
+        desc: 'Supervisors inspect before/after photos and either approve (`action: approve` -> `Resolved`) or reopen (`action: reopen` -> `Assigned`).',
+        method: 'PATCH', url: '/api/complaints/1/verify', fields: [
+          { name: 'complaint_id', label: 'Complaint ID in URL', value: '1' },
+          { name: 'action', label: 'Action (`approve` | `reopen`)', value: 'approve' },
+          { name: 'notes', label: 'Supervisor Verification Notes', value: 'Checked on site. Drain is clear and washroom is clean. Approved.' }
+        ]
+      },
+      postFeedback: {
+        title: 'Citizen Service Rating & Feedback',
+        desc: 'Once resolved, citizens submit a 1-5 star service review which marks the complaint `Closed` and updates washroom rating metrics.',
+        method: 'POST', url: '/api/complaints/1/feedback', fields: [
+          { name: 'complaint_id', label: 'Complaint ID in URL', value: '1' },
+          { name: 'rating', label: 'Cleanliness Rating (1 to 5 Stars)', value: '5' },
+          { name: 'feedback', label: 'Citizen Review & Comments', value: 'Super fast resolution! Ramesh did an excellent job cleaning the floor.' }
+        ]
+      },
+      postSendOtp: {
+        title: 'Send OTP Code via Nodemailer SMTP',
+        desc: 'Triggers real email sending (`SMTP_USER`) with a 6-digit verification code.',
+        method: 'POST', url: '/api/auth/send-otp', fields: [
+          { name: 'email', label: 'Target Email Address', value: 'citizen@clean.org' }
+        ]
+      },
+      postLogin: {
+        title: 'Standard Email & Password Login',
+        desc: 'Authenticates user and returns JWT token (`password123`).',
+        method: 'POST', url: '/api/auth/login', fields: [
+          { name: 'email', label: 'Email Address', value: 'admin.vikram@clean.org' },
+          { name: 'password', label: 'Password', value: 'password123' }
+        ]
+      }
+    };
+
+    // Auto login on start
+    async function initAuth() {
+      await switchRole('CITIZEN', 'citizen@clean.org');
+      loadEndpoint('getDashboardSummary');
+    }
+
+    async function switchRole(role, email) {
+      currentRole = role;
+      document.querySelectorAll('.btn-role').forEach(b => b.classList.remove('active'));
+      event && event.target && event.target.classList && event.target.classList.add('active');
+      
+      document.getElementById('activeRoleName').innerText = `${role} (${email})`;
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password: 'password123' })
+        });
+        const data = await res.json();
+        if (data.success && data.token) {
+          currentToken = data.token;
+        }
+      } catch (e) {
+        console.error('Role switch failed:', e);
+      }
+    }
+
+    function loadEndpoint(key) {
+      currentEndpoint = key;
+      document.querySelectorAll('.endpoint-btn').forEach(b => b.classList.remove('active'));
+      event && event.currentTarget && event.currentTarget.classList.add('active');
+
+      const conf = endpointsConfig[key];
+      document.getElementById('endpointTitle').innerText = conf.title;
+      document.getElementById('endpointDesc').innerText = conf.desc;
+      
+      const badge = document.getElementById('endpointBadge');
+      badge.innerText = `${conf.method} ${conf.url}`;
+      badge.className = `badge badge-${conf.method.toLowerCase()}`;
+      badge.style.fontSize = '0.9rem'; badge.style.padding = '6px 12px';
+
+      const fieldsContainer = document.getElementById('formFields');
+      fieldsContainer.innerHTML = '';
+
+      if (conf.fields && conf.fields.length > 0) {
+        conf.fields.forEach(f => {
+          const div = document.createElement('div');
+          div.className = 'form-group';
+          div.innerHTML = `
+            <label>${f.label}</label>
+            <input type="text" class="form-control" name="${f.name}" value='${f.value}' />
+          `;
+          fieldsContainer.appendChild(div);
+        });
+      } else {
+        fieldsContainer.innerHTML = `<p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">No request parameters needed for this GET request. Click send below!</p>`;
+      }
+
+      document.getElementById('responseContainer').style.display = 'none';
+    }
+
+    async function executeRequest(e) {
+      e.preventDefault();
+      const conf = endpointsConfig[currentEndpoint];
+      let targetUrl = conf.url;
+      const method = conf.method;
+      const headers = { 'Authorization': `Bearer ${currentToken}` };
+
+      const formInputs = document.querySelectorAll('#formFields input');
+      const bodyData = {};
+      const queryParams = [];
+
+      formInputs.forEach(inp => {
+        const name = inp.name;
+        let val = inp.value.trim();
+
+        if (name === 'complaint_id' || name === 'qrCodeId') {
+          // Replace parameter inside URL like /api/complaints/1/assign or /api/washrooms/qr/QR-WASH-101
+          targetUrl = targetUrl.replace(/\/1\//, `/${val}/`).replace(/\/1$/, `/${val}`).replace(/QR-WASH-101/, val);
+          return;
+        }
+
+        if (method === 'GET') {
+          if (val) queryParams.push(`${encodeURIComponent(name)}=${encodeURIComponent(val)}`);
+        } else {
+          // Try parse JSON strings like facilities array
+          if (val && (val.startsWith('[') || val.startsWith('{'))) {
+            try { val = JSON.parse(val); } catch(err){}
+          }
+          bodyData[name] = val;
+        }
+      });
+
+      if (method === 'GET' && queryParams.length > 0) {
+        targetUrl += (targetUrl.includes('?') ? '&' : '?') + queryParams.join('&');
+      } else if (method !== 'GET') {
+        headers['Content-Type'] = 'application/json';
+      }
+
+      try {
+        const res = await fetch(targetUrl, {
+          method,
+          headers,
+          body: method !== 'GET' ? JSON.stringify(bodyData) : undefined
+        });
+        const data = await res.json();
+
+        const badge = document.getElementById('responseStatusBadge');
+        badge.innerText = `${res.status} ${res.statusText}`;
+        badge.className = `status-badge ${res.ok ? 'status-200' : 'status-error'}`;
+
+        document.getElementById('responseJson').innerText = JSON.stringify(data, null, 2);
+        document.getElementById('responseContainer').style.display = 'block';
+      } catch (err) {
+        document.getElementById('responseJson').innerText = JSON.stringify({ error: err.message }, null, 2);
+        document.getElementById('responseContainer').style.display = 'block';
+      }
+    }
+
+    window.onload = initAuth;
+  </script>
+</body>
+</html>

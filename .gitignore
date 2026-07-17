@@ -1,0 +1,8 @@
+node_modules/
+.env
+data/*.sqlite
+.DS_Store
+*.log
+npm-debug.log*
+.gemini/
+public/uploads/tmp/
